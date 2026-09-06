@@ -262,115 +262,234 @@ int maxSubArray(const std::vector<int>& nums) {
     return 0;
 }"""
 
-st.subheader("📝 Task Definition & Submission")
-col_input1, col_input2 = st.columns([1, 2])
+# Tabbed Navigation
+tab1, tab2 = st.tabs(["🚀 Real-Time Evaluation & RLAIF Flywheel", "📥 RLAIF Edge-Case Queue"])
 
-with col_input1:
-    task_id = st.text_input("Task ID", value=st.session_state.get("task_id", default_task_id))
-    prompt = st.text_area("Problem Prompt", value=st.session_state.get("prompt", default_prompt), height=140)
+with tab1:
+    st.subheader("📝 Task Definition & Submission")
+    col_input1, col_input2 = st.columns([1, 2])
 
-with col_input2:
-    code = st.text_area("Generated Agent Code", value=st.session_state.get("code", default_code), height=140)
-    test_cases = st.text_area("Test Cases / Main Assertions", value=st.session_state.get("tests", default_tests), height=120)
+    with col_input1:
+        task_id = st.text_input("Task ID", value=st.session_state.get("task_id", default_task_id))
+        prompt = st.text_area("Problem Prompt", value=st.session_state.get("prompt", default_prompt), height=140)
 
-run_eval = st.button("🚀 Run Dual Evaluation (Sandbox + LLM Judge)", type="primary", use_container_width=True)
+    with col_input2:
+        code = st.text_area("Generated Agent Code", value=st.session_state.get("code", default_code), height=140)
+        test_cases = st.text_area("Test Cases / Main Assertions", value=st.session_state.get("tests", default_tests), height=120)
 
-if run_eval:
-    endpoint = f"{backend_url}/evaluate/{'python' if language == 'Python' else 'cpp'}"
-    payload = {
-        "task_id": task_id,
-        "language": language.lower(),
-        "prompt": prompt,
-        "code": code,
-        "test_cases": test_cases
-    }
-    with st.spinner(f"Executing {language} Sandbox and querying NVIDIA NIM LLM Judge..."):
-        try:
-            res = requests.post(endpoint, json=payload, timeout=60.0)
-            if res.status_code == 200:
-                st.session_state.eval_result = res.json()
-                st.session_state.active_task_id = task_id
-                st.session_state.active_prompt = prompt
-                st.session_state.active_raw_code = code
-                st.session_state.edited_code_area = code
-                st.success("Evaluation completed successfully!")
-            else:
-                st.error(f"Evaluation request failed (HTTP {res.status_code}): {res.text}")
-        except Exception as err:
-            st.error(f"Failed to connect to backend: {str(err)}")
+        # Smart UI Tip for Language Mismatch
+        if "#include" in code and language == "Python":
+            st.info("💡 **Language Tip:** Your code contains C++ `#include` headers. Change the sidebar **Language / Sandbox Target** to `C++` for compilation.")
+        elif ("def " in code or "import " in code) and language == "C++":
+            st.info("💡 **Language Tip:** Your code contains Python keywords (`def`/`import`). Change the sidebar **Language / Sandbox Target** to `Python`.")
 
-st.divider()
+    run_eval = st.button("🚀 Run Dual Evaluation (Sandbox + LLM Judge)", type="primary", use_container_width=True)
 
-# Dashboard Output & HITL Curation
-if "eval_result" in st.session_state:
-    result = st.session_state.eval_result
-    trace = result["execution_trace"]
-    judge = result["judge_result"]
-    combined = result["combined_score"]
-
-    st.subheader("📊 Evaluation Dashboard & HITL Curation")
-    col_left, col_right = st.columns([1, 1], gap="medium")
-
-    # LEFT COLUMN: Raw Execution & Automated Critique
-    with col_left:
-        st.markdown("### 🤖 Automated Dual Evaluation")
-
-        # Metric summary row
-        m1, m2, m3 = st.columns(3)
-        with m1:
-            if trace["passed"]:
-                st.metric("Sandbox Status", "PASSED ✅")
-            else:
-                st.metric("Sandbox Status", "FAILED ❌")
-        with m2:
-            st.metric("LLM Judge Rating", f"{judge['score']} / 5 ⭐")
-        with m3:
-            st.metric("Combined Score", f"{combined} / 5.0")
-
-        st.markdown("**Sandbox Output Logs**")
-        if trace["stdout"]:
-            st.caption("Standard Output (stdout):")
-            st.code(trace["stdout"], language="text")
-        if trace["stderr"]:
-            st.caption("Standard Error (stderr):")
-            st.code(trace["stderr"], language="text")
-
-        st.caption(f"Execution Runtime: `{trace['execution_time']}s` | Exit Code: `{trace['exit_code']}`")
-
-        st.markdown("**LLM Judge Reasoning & Qualitative Critique**")
-        st.info(judge["reasoning"])
-
-    # RIGHT COLUMN: Human Curation & DPO Export
-    with col_right:
-        st.markdown("### 🧑‍💻 Human Expert Curation (RLHF)")
-        st.caption("Edit the code below to produce the optimal 'Chosen' completion for Direct Preference Optimization (DPO).")
-
-        edited_code = st.text_area(
-            "Optimal Code (Chosen Candidate)",
-            value=st.session_state.get("edited_code_area", code),
-            height=260
-        )
-
-        human_rating = st.slider("Human Expert Rating (1 - 5 Stars)", min_value=1, max_value=5, value=int(judge["score"]))
-
-        if st.button("💾 Export DPO Pair to JSONL", type="primary", use_container_width=True):
-            dpo_endpoint = f"{backend_url}/export/dpo"
-            dpo_payload = {
-                "task_id": st.session_state.get("active_task_id", task_id),
-                "prompt": st.session_state.get("active_prompt", prompt),
-                "chosen": edited_code,
-                "rejected": st.session_state.get("active_raw_code", code),
-                "human_rating": human_rating,
-                "judge_score": int(judge["score"]),
-                "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()
-            }
+    if run_eval:
+        endpoint = f"{backend_url}/evaluate/{'python' if language == 'Python' else 'cpp'}"
+        payload = {
+            "task_id": task_id,
+            "language": language.lower(),
+            "prompt": prompt,
+            "code": code,
+            "test_cases": test_cases
+        }
+        with st.spinner(f"Executing {language} Sandbox and querying NVIDIA NIM LLM Judge..."):
             try:
-                export_res = requests.post(dpo_endpoint, json=dpo_payload, timeout=5.0)
-                if export_res.status_code == 200:
-                    data = export_res.json()
-                    st.success(f"Successfully exported DPO pair for '{dpo_payload['task_id']}' to `data/dpo_dataset.jsonl`!")
-                    st.json(data)
+                res = requests.post(endpoint, json=payload, timeout=60.0)
+                if res.status_code == 200:
+                    st.session_state.eval_result = res.json()
+                    st.session_state.active_task_id = task_id
+                    st.session_state.active_prompt = prompt
+                    st.session_state.active_raw_code = code
+                    st.session_state.edited_code_area = code
+                    st.success("Evaluation completed successfully!")
                 else:
-                    st.error(f"Export failed: {export_res.text}")
-            except Exception as e:
-                st.error(f"Failed to submit DPO entry: {str(e)}")
+                    st.error(f"Evaluation request failed (HTTP {res.status_code}): {res.text}")
+            except Exception as err:
+                st.error(f"Failed to connect to backend: {str(err)}")
+
+    st.divider()
+
+    # Dashboard Output & HITL Curation
+    if "eval_result" in st.session_state:
+        result = st.session_state.eval_result
+        trace = result["execution_trace"]
+        judge = result["judge_result"]
+        combined = result["combined_score"]
+        routing = result.get("routing_info", {})
+
+        st.subheader("📊 Evaluation Dashboard & RLAIF Flywheel Status")
+
+        # RLAIF Flywheel Banner
+        if routing.get("auto_exported"):
+            st.success(
+                "🤖 **RLAIF Auto-Flywheel Triggered**: High-confidence trajectory (`Score >= 4.5`). "
+                "The system automatically synthesized an optimal 'Chosen' response using DeepSeek/Llama NIM reasoning models "
+                "and appended it to `data/dpo_dataset.jsonl` tagged as `generation_method: rlaif_auto`!"
+            )
+        else:
+            st.warning(
+                "🧑‍💻 **Routed to HITL Edge-Case Queue**: Low/medium confidence or failing evaluation. "
+                "This item requires human curation in **Tab 2: RLAIF Edge-Case Queue**."
+            )
+
+        col_left, col_right = st.columns([1, 1], gap="medium")
+
+        # LEFT COLUMN: Raw Execution & Automated Critique
+        with col_left:
+            st.markdown("### 🤖 Automated Dual Evaluation")
+
+            # Primary Metric Summary Row
+            m1, m2, m3 = st.columns(3)
+            with m1:
+                if trace["passed"]:
+                    st.metric("Sandbox Status", "PASSED ✅")
+                else:
+                    st.metric("Sandbox Status", "FAILED ❌")
+            with m2:
+                st.metric("LLM Judge Rating", f"{judge['score']} / 5 ⭐")
+            with m3:
+                st.metric("Combined Score", f"{combined} / 5.0")
+
+            # Multi-Dimensional Granular Breakdown Row
+            d1, d2, d3, d4 = st.columns(4)
+            with d1:
+                st.metric("Correctness", f"{judge.get('correctness_score', judge['score'])} / 5 ⭐")
+            with d2:
+                st.metric("Security Score", f"{judge.get('security_score', 5)} / 5 🛡️")
+            with d3:
+                st.metric("Complexity", judge.get("complexity_rating", "O(1)"))
+            with d4:
+                st.metric("Edge Cases", judge.get("edge_case_handling", "Adequate"))
+
+            st.markdown("**🛡️ Static Security Analysis**")
+            sec_flags = trace.get("security_flags", [])
+            if sec_flags:
+                for flag in sec_flags:
+                    st.warning(f"⚠️ {flag}")
+            else:
+                st.success("✅ Clean Static Analysis (No Security Vulnerabilities Detected)")
+
+            st.markdown("**Sandbox Output Logs**")
+            if trace["stdout"]:
+                st.caption("Standard Output (stdout):")
+                st.code(trace["stdout"], language="text")
+            if trace["stderr"]:
+                st.caption("Standard Error (stderr):")
+                st.code(trace["stderr"], language="text")
+
+            st.caption(f"Execution Runtime: `{trace['execution_time']}s` | Exit Code: `{trace['exit_code']}`")
+
+            st.markdown("**LLM Judge Reasoning & Qualitative Critique**")
+            st.info(judge["reasoning"])
+
+        # RIGHT COLUMN: Human Curation & DPO Export
+        with col_right:
+            st.markdown("### 🧑‍💻 Human Expert Curation (RLHF)")
+            st.caption("Edit the code below to produce the optimal 'Chosen' completion for Direct Preference Optimization (DPO).")
+
+            default_chosen_val = routing.get("chosen_code", code) if routing.get("auto_exported") else code
+
+            edited_code = st.text_area(
+                "Optimal Code (Chosen Candidate)",
+                value=st.session_state.get("edited_code_area", default_chosen_val),
+                height=260
+            )
+
+            human_rating = st.slider("Human Expert Rating (1 - 5 Stars)", min_value=1, max_value=5, value=int(judge["score"]))
+
+            if st.button("💾 Export DPO Pair to JSONL", type="primary", use_container_width=True):
+                dpo_endpoint = f"{backend_url}/export/dpo"
+                dpo_payload = {
+                    "task_id": st.session_state.get("active_task_id", task_id),
+                    "prompt": st.session_state.get("active_prompt", prompt),
+                    "chosen": edited_code,
+                    "rejected": st.session_state.get("active_raw_code", code),
+                    "human_rating": human_rating,
+                    "judge_score": int(judge["score"]),
+                    "correctness_score": judge.get("correctness_score"),
+                    "security_score": judge.get("security_score"),
+                    "complexity_rating": judge.get("complexity_rating"),
+                    "generation_method": "human_curated",
+                    "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()
+                }
+                try:
+                    export_res = requests.post(dpo_endpoint, json=dpo_payload, timeout=5.0)
+                    if export_res.status_code == 200:
+                        data = export_res.json()
+                        st.success(f"Successfully exported DPO pair for '{dpo_payload['task_id']}' to `data/dpo_dataset.jsonl`!")
+                        st.json(data)
+                    else:
+                        st.error(f"Export failed: {export_res.text}")
+                except Exception as e:
+                    st.error(f"Failed to submit DPO entry: {str(e)}")
+
+with tab2:
+    st.subheader("📥 RLAIF Edge-Case Queue (Human-in-the-Loop)")
+    st.caption("Review low/medium confidence agent outputs routed for human curation.")
+
+    try:
+        q_res = requests.get(f"{backend_url}/queue/hitl", timeout=3.0)
+        if q_res.status_code == 200:
+            q_data = q_res.json()
+            queue_items = q_data.get("items", [])
+            st.metric("Pending Queue Items", len(queue_items))
+
+            if not queue_items:
+                st.success("🎉 No pending items in the HITL Queue! All evaluations met the high-confidence RLAIF flywheel threshold.")
+            else:
+                for idx, item in enumerate(queue_items):
+                    with st.expander(f"📌 Task `{item['task_id']}` | Queue ID `{item['queue_id']}` (Score: {item['combined_score']}/5.0)", expanded=(idx == 0)):
+                        st.markdown(f"**Problem Prompt:** {item['prompt']}")
+
+                        c_left, c_right = st.columns(2)
+                        with c_left:
+                            st.markdown("**Original Agent Code (Rejected):**")
+                            st.code(item["rejected_code"], language=item["language"].lower())
+
+                            trace_info = item["execution_trace"]
+                            st.caption(f"Sandbox Status: {'PASSED ✅' if trace_info['passed'] else 'FAILED ❌'} | Exit Code: {trace_info['exit_code']}")
+                            if trace_info.get("stderr"):
+                                st.error(f"Stderr: {trace_info['stderr']}")
+
+                        with c_right:
+                            st.markdown("**RLAIF Suggested Fix (Chosen Candidate):**")
+                            suggested_fix = st.text_area(
+                                f"Curate Chosen Code for {item['queue_id']}",
+                                value=item["suggested_chosen_code"],
+                                height=200,
+                                key=f"fix_{item['queue_id']}"
+                            )
+
+                            rating = st.slider("Human Curator Rating", min_value=1, max_value=5, value=3, key=f"rate_{item['queue_id']}")
+
+                            if st.button(f"✅ Approve & Export DPO Pair ({item['queue_id']})", type="primary", key=f"approve_{item['queue_id']}"):
+                                approve_endpoint = f"{backend_url}/queue/hitl/approve?queue_id={item['queue_id']}"
+                                dpo_payload = {
+                                    "task_id": item["task_id"],
+                                    "prompt": item["prompt"],
+                                    "chosen": suggested_fix,
+                                    "rejected": item["rejected_code"],
+                                    "human_rating": rating,
+                                    "judge_score": item["judge_result"]["score"],
+                                    "correctness_score": item["judge_result"].get("correctness_score"),
+                                    "security_score": item["judge_result"].get("security_score"),
+                                    "complexity_rating": item["judge_result"].get("complexity_rating"),
+                                    "generation_method": "human_curated",
+                                    "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()
+                                }
+                                try:
+                                    app_res = requests.post(approve_endpoint, json=dpo_payload, timeout=5.0)
+                                    if app_res.status_code == 200:
+                                        st.success(f"Item `{item['queue_id']}` approved and exported to `data/dpo_dataset.jsonl`!")
+                                        st.rerun()
+                                    else:
+                                        st.error(f"Failed to approve: {app_res.text}")
+                                except Exception as err:
+                                    st.error(f"Approval connection error: {str(err)}")
+        else:
+            st.error("Failed to fetch HITL Queue from API Gateway.")
+    except Exception as e:
+        st.warning(f"Could not connect to backend server: {str(e)}")
+
