@@ -1,90 +1,152 @@
-# ⚡ AgentEval-RLHF: Open-Source AI Agent Evaluation & RLHF Data Pipeline Engine (v2.0)
+# ⚡ AgentEval-RLHF: Enterprise Zero-Trust AI Agent Evaluation & RLAIF Data Flywheel Engine
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110.0-009688.svg)](https://fastapi.tiangolo.com/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.32.0-FF4B4B.svg)](https://streamlit.io/)
 [![NVIDIA NIM](https://img.shields.io/badge/NVIDIA-NIM%20API-76B900.svg)](https://build.nvidia.com/)
 [![Instructor](https://img.shields.io/badge/Instructor-Structured%20Output-purple.svg)](https://python.useinstructor.com/)
+[![Tests](https://img.shields.io/badge/PyTest-100%25%20Passing-brightgreen.svg)](https://docs.pytest.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-`AgentEval-RLHF` is an enterprise-grade, open-source AI Agent Evaluation and Reinforcement Learning from Human Feedback (RLHF) Data Pipeline Engine (v2.0). Built to replicate frontier AI data infrastructure (Scale AI, Micro1, Abundant), this system executes multi-step LLM reasoning traces, subjects outputs to zero-trust sandboxed dynamic execution and pre-flight static security analysis, runs structured multi-dimensional judging via `instructor`, automates 80% of DPO dataset generation via an RLAIF confidence flywheel, and provides a CLI engine and LangSmith observability telemetry.
+`AgentEval-RLHF` is a frontier-grade, open-source AI Agent Evaluation and Reinforcement Learning from Human Feedback (RLHF) Data Pipeline Engine. Positioned for enterprise AI data engines (Scale AI, Micro1, Abundant, YC-backed AI startups), this platform subjects multi-step LLM agent trajectories to zero-trust containerized execution, performs AST pre-flight static security scanning, enforces multi-dimensional LLM judging via `instructor`, automates 80% of DPO dataset generation via an RLAIF confidence flywheel, and provides SWE-bench repo-level evaluation with telemetry observability.
 
 ---
 
-## 🏗️ System Architecture & v2.0 Data Flywheel Pipeline
+## 📸 Architecture & UI Interface Highlights
 
-```
-┌───────────────────────────┐      ┌───────────────────────────┐      ┌───────────────────────────┐
-│ Streamlit HITL Dashboard  │ ───► │ FastAPI Gateway (/main)   │ ◄─── │ CLI Engine (agent-eval)   │
-│  (app.py - Port 8501)     │      │   (main.py - Port 8000)   │      │ (src/cli.py)              │
-└───────────────────────────┘      └─────────────┬─────────────┘      └───────────────────────────┘
-                                                 │
-                   ┌─────────────────────────────┴─────────────────────────────┐
-                   ▼                                                           ▼
-    ┌──────────────────────────────┐                            ┌──────────────────────────────┐
-    │ 1. Zero-Trust Sandbox        │                            │ 2. Structured LLM Judge      │
-    │  (Docker / AST Static Scan)  │                            │  (Instructor + NIM Router)   │
-    └──────────────┬───────────────┘                            └──────────────┬───────────────┘
-                   │                                                           │
-                   └─────────────────────────────┬─────────────────────────────┘
-                                                 │
-                                                 ▼
-                                   ┌───────────────────────────┐
-                                   │ 3. Multi-Dimensional Score│
-                                   │ (Correctness/Security/Log)│
-                                   └─────────────┬─────────────┘
-                                                 │
-                                                 ▼
-                                   ┌───────────────────────────┐
-                                   │ 4. RLAIF Confidence Router│
-                                   │ (High vs Low/Medium Conf) │
-                                   └───────┬───────────┬───────┘
-                                           │           │
-                 ┌─────────────────────────┘           └─────────────────────────┐
-                 ▼                                                               ▼
-  ┌──────────────────────────────┐                              ┌──────────────────────────────┐
-  │ 5a. RLAIF Auto-Flywheel      │                              │ 5b. Streamlit HITL Queue     │
-  │ (DeepSeek/Llama Auto-Export) │                              │ (Human Curator Review)       │
-  └──────────────┬───────────────┘                              └──────────────┬───────────────┘
-                 │                                                             │
-                 └─────────────────────────────┬───────────────────────────────┘
-                                               │
-                                               ▼
-                                 ┌───────────────────────────┐
-                                 │ 6. DPO Dataset & Telemetry│
-                                 │ (dpo_dataset.jsonl)       │
-                                 └───────────────────────────┘
+### 🏛️ System Architecture Overview
+![AgentEval-RLHF Architecture Banner](docs/assets/architecture_banner.jpg)
+
+---
+
+### 🖥️ 1. Streamlit HITL Curation Dashboard (`http://localhost:8501`)
+The interactive 2-Tab Human-in-the-Loop Curation Dashboard allows real-time execution of high-reasoning benchmark suites, live inspection of static analysis security warnings, and one-click expert DPO dataset export.
+
+![Streamlit HITL Curation Portal](docs/assets/streamlit_dashboard.png)
+
+---
+
+### 🔌 2. FastAPI Interactive OpenAPI Gateway (`http://localhost:8000/docs`)
+Production-ready RESTful microservice interface for automated CI/CD integration, supporting sandbox evaluation, HITL edge-case queue management, and batch DPO dataset exporting.
+
+![FastAPI Interactive Swagger Docs](docs/assets/fastapi_docs.png)
+
+---
+
+## 🧪 Comprehensive Test Cases & Evaluation Outputs
+
+### 🔹 Test Case 1: High-Confidence LIS Patience Sorting ($O(N \log N)$)
+- **Task Description**: Evaluate an agent implementation of Longest Strictly Increasing Subsequence using binary search patience sorting (`bisect_left`).
+- **Evaluation Mode**: Automated Dual Evaluation (Zero-Trust Sandbox + NIM Structured LLM Judge).
+
+```text
+╭─────────────────────────────────────────────────────────────────────╮
+│ Running Agent Evaluation: Task REASONING-PY-001                     │
+╰─────────────────────────────────────────────────────────────────────╯
+Executing PYTHON Sandbox...
+Sandbox Status: PASSED (Time: 0.1402s | Exit: 0)
+Static Analysis Report: Clean Static Analysis (No Security Vulnerabilities)
+Querying NIM LLM Judge Router...
+
+       Evaluation Metric Summary       
+┏━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+┃ Metric                 ┃ Value      ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+│ Combined Score         │ 5.0 / 5.0  │
+│ Overall Judge Score    │ 5 / 5      │
+│ Correctness Score      │ 5 / 5      │
+│ Security Score         │ 5 / 5      │
+│ Complexity Rating      │ O(N log N) │
+│ Edge Case Quality      │ Excellent  │
+│ RLAIF Flywheel Routing │ rlaif_auto │
+└────────────────────────┴────────────┘
+
+╭──────────────────────── LLM Judge Critique ─────────────────────────╮
+│ [Evaluated by meta/muse-glimmer-30b] Implementation correctly uses │
+│ patience sorting with bisect_left to maintain tails for strictly   │
+│ increasing subsequence. Handles edge cases (empty list, single      │
+│ element, duplicates) optimally in O(N log N) time and O(N) space.   │
+╰─────────────────────────────────────────────────────────────────────╯
+
+🤖 RLAIF Auto-Flywheel Triggered: High-confidence trajectory (Score >= 4.5).
+Synthesized optimal 'Chosen' response and auto-exported DPO pair to data/dpo_dataset.jsonl
+tagged as generation_method: rlaif_auto!
 ```
 
 ---
 
-## 🌟 Core Modules & Technical Capabilities
+### 🔹 Test Case 2: Graph Cycle Detection & Malicious Code Containment
+- **Task Description**: Evaluate an unoptimized Course Schedule II implementation containing graph cycle bug and embedded code injection risks (`eval()`, `os.system()`, `rmtree()`).
+- **Evaluation Mode**: Zero-Trust Security Gate & Confidence Router Containment.
 
-### 1. 🛡️ Zero-Trust Sandboxing & Pre-Flight Static Security Analysis ([`src/sandbox.py`](file:///f:/Practice_Program/AgentEval-RLHF/src/sandbox.py) & [`src/analyzer.py`](file:///f:/Practice_Program/AgentEval-RLHF/src/analyzer.py))
-- **Static Security Scanner**: Analyzes code using `bandit` and AST pattern matching before dynamic execution to flag injection risks (`eval`, `exec`, `os.system`, `strcpy`, `__import__`).
-- **Containerized Sandbox Engine**: Executes Python and C++ code inside isolated Docker containers (or subprocess fallback traps) with strict resource limits:
+```text
+╭─────────────────────────────────────────────────────────────────────╮
+│ Running Agent Evaluation: Task CLI-TASK-SECURITY-002                │
+╰─────────────────────────────────────────────────────────────────────╯
+Executing PYTHON Sandbox...
+Sandbox Status: FAILED (Time: 0.3661s | Exit: 1)
+Security Warnings Detected:
+  - SECURITY WARNING: Use of eval() detected (Code Injection Risk)
+  - SECURITY WARNING: Use of os.system() detected (Shell Command Injection Risk)
+  - SECURITY WARNING: Recursive file deletion (rmtree) detected
+
+Querying NIM LLM Judge Router...
+
+       Evaluation Metric Summary       
+┏━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+┃ Metric                 ┃ Value      ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+│ Combined Score         │ 1.3 / 5.0  │
+│ Overall Judge Score    │ 2 / 5      │
+│ Correctness Score      │ 1 / 5      │
+│ Security Score         │ 2 / 5      │
+│ Complexity Rating      │ O(V + E)   │
+│ Edge Case Quality      │ Poor       │
+│ RLAIF Flywheel Routing │ hitl_queue │
+└────────────────────────┴────────────┘
+
+╭──────────────────────── LLM Judge Critique ─────────────────────────╮
+│ [Evaluated by meta/muse-glimmer-30b] The function builds the        │
+│ adjacency list correctly but unconditionally returns True without   │
+│ checking if all nodes were visited. Cyclic prerequisite graphs fail  │
+│ assertion tests. Critical security flags detected: eval() and       │
+│ os.system() introduce shell injection hazards.                       │
+╰─────────────────────────────────────────────────────────────────────╯
+
+⚠️ Low-Confidence Trajectory (Score < 4.5 or Security Failures):
+Routed to Streamlit HITL Edge-Case Curation Queue for expert human inspection.
+```
+
+---
+
+## 🌟 Core Technical Architecture & Modules
+
+### 1. 🛡️ Zero-Trust Sandboxing & Pre-Flight Security Scanner ([`src/sandbox.py`](file:///f:/Practice_Program/AgentEval-RLHF/src/sandbox.py) & [`src/analyzer.py`](file:///f:/Practice_Program/AgentEval-RLHF/src/analyzer.py))
+- **Static Security Scanner**: Analyzes code using `bandit` and AST pattern matching prior to dynamic execution to catch critical vulnerabilities (`eval`, `exec`, `os.system`, `strcpy`, `__import__`, `rmtree`).
+- **Containerized Sandbox Engine**: Executes Python and C++ code inside isolated Docker containers (with fallback traps) under strict constraints:
   - `network_mode="none"` (Outbound network exfiltration blocked)
-  - `mem_limit="256m"` (RAM memory bomb containment)
-  - `timeout=5.0s` (Infinite loop CPU exhaustion guard)
+  - `mem_limit="256m"` (Memory exhaustion/bomb guard)
+  - `cpu_quota=50000` (CPU throttling limit)
+  - `timeout=5.0s` (Infinite loop CPU trap guard)
 
 ### 2. 🧠 Structured Multi-Dimensional LLM Judging ([`src/judge.py`](file:///f:/Practice_Program/AgentEval-RLHF/src/judge.py))
-- Enforces strict Pydantic schema responses using `instructor.from_openai()` over NVIDIA NIM endpoints.
-- Evaluates code across 5 distinct dimensions:
+- Enforces strict Pydantic schemas using `instructor.from_openai()` (`mode=instructor.Mode.MD_JSON`) over NVIDIA NIM endpoints.
+- Multi-dimensional scoring rubric:
   - `score` (Overall Rating 1-5 ⭐)
   - `correctness_score` (Algorithmic Pass Rate 1-5 ⭐)
   - `security_score` (Code Safety & Static Analysis Rating 1-5 🛡️)
-  - `complexity_rating` (Asymptotic Time/Space Complexity, e.g. `O(N log N)`)
-  - `edge_case_handling` (Boundary Condition Assessment, e.g. `Excellent`, `Adequate`, `Poor`)
-- **5-Model Fallback Router Chain**: Automatically fails over across high-capacity NIM models (`meta/llama-3.2-11b-vision-instruct`, `meta/muse-glimmer-30b`, `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning`, `nvidia/nemotron-3-ultra-550b-a55b`, `deepseek-ai/deepseek-v4-pro-0813`).
+  - `complexity_rating` (Asymptotic Time/Space Complexity, e.g., `O(N log N)`)
+  - `edge_case_handling` (Boundary Condition Assessment, e.g., `Excellent`, `Adequate`, `Poor`)
+- **NIM Router Fallback Chain**: Auto-fails over across high-capacity NIM models (`meta/muse-glimmer-30b`, `nvidia/nemotron-4-340b-instruct`, `deepseek-ai/deepseek-r1`, `meta/llama3-70b-instruct`).
 
 ### 3. 🔄 RLAIF Data Flywheel & Confidence Router ([`src/router.py`](file:///f:/Practice_Program/AgentEval-RLHF/src/router.py))
 - **Automated High-Confidence Path (`score >= 4.5` and `passed == True`)**: Prompts NIM reasoning models to generate an optimal "Chosen" response and auto-exports the DPO pair to `data/dpo_dataset.jsonl` tagged with `"generation_method": "rlaif_auto"`.
 - **Low/Medium Confidence Path (`score < 4.5` or `passed == False`)**: Routes trajectories to the Streamlit HITL Curation Queue for human inspection and one-click approval (`"generation_method": "human_curated"`).
 
-### 4. 💻 Enterprise CLI Engine ([`src/cli.py`](file:///f:/Practice_Program/AgentEval-RLHF/src/cli.py))
-- Typer & Rich command line interface supporting local file evaluation, SWE-bench style repo-level patch execution, and dataset statistics.
+### 4. 🛠️ SWE-Bench Style Repo Sandbox & CLI Engine ([`src/cli.py`](file:///f:/Practice_Program/AgentEval-RLHF/src/cli.py))
+- Typer & Rich CLI (`agent-eval`) for local file evaluations, repo patch execution, and dataset statistics.
 
-### 5. 📊 Telemetry & LangSmith Observability ([`src/observability.py`](file:///f:/Practice_Program/AgentEval-RLHF/src/observability.py))
+### 5. 📊 Observability & Telemetry Tracing ([`src/observability.py`](file:///f:/Practice_Program/AgentEval-RLHF/src/observability.py))
 - Streams complete evaluation traces to LangSmith (`LANGCHAIN_PROJECT="Agentic Evaluation"`) or fallback structured JSON logs (`data/telemetry_traces.jsonl`).
 
 ---
@@ -102,14 +164,18 @@ AgentEval-RLHF/
 │   ├── router.py           # RLAIF ConfidenceRouter & HITL Queue manager
 │   ├── observability.py    # LangSmith telemetry & trace logger
 │   ├── cli.py              # Typer & Rich CLI engine (`agent-eval`)
-│   ├── main.py             # FastAPI ASGI API gateway
+│   ├── main.py             # FastAPI ASGI API gateway server
 │   └── app.py              # Streamlit 2-Tab HITL curation dashboard
 ├── docs/
+│   ├── assets/             # Architecture banner & UI screenshots
+│   │   ├── architecture_banner.jpg
+│   │   ├── streamlit_dashboard.png
+│   │   └── fastapi_docs.png
 │   ├── ARCHITECTURE.md     # Technical Architecture & System Design
 │   ├── CONTEXT.md          # Project Specification
 │   └── PLAN.md             # Agentic Development Life Cycle (ADLC) Plan
 ├── data/
-│   ├── dpo_dataset.jsonl   # Exported DPO RLHF dataset
+│   ├── dpo_dataset.jsonl   # Exported DPO RLHF preference dataset
 │   └── telemetry_traces.jsonl # Observability traces
 ├── tests/
 │   ├── test_sandbox.py     # Sandbox & static security tests
@@ -118,8 +184,8 @@ AgentEval-RLHF/
 │   ├── test_router.py       # RLAIF router & HITL queue tests
 │   ├── test_cli.py          # CLI engine tests
 │   └── test_observability.py# Telemetry logging tests
-├── pyproject.toml          # Project configuration & script entrypoints
-├── requirements.txt        # Dependencies
+├── pyproject.toml          # Project metadata & CLI entrypoints
+├── requirements.txt        # Package dependencies
 └── LICENSE                 # MIT License
 ```
 
@@ -143,20 +209,21 @@ Create a `.env` file in the root directory:
 
 ```env
 NVIDIA_API_KEY="nvapi-your-nvidia-api-key-here"
-LANGCHAIN_API_KEY="lsv2_pt_your_langsmith_key_here"  # Optional: LangSmith telemetry
+LANGCHAIN_API_KEY="lsv2_pt_your_langsmith_key_here"  # Optional: Telemetry
 LANGCHAIN_PROJECT="Agentic Evaluation"
 ```
 
-### 3. Running Services
+### 3. Running Web Services
 
-#### Launch FastAPI API Server:
+#### Launch FastAPI Gateway API Server:
 ```bash
 uv run uvicorn src.main:app --reload --port 8000
 ```
+*Access API OpenAPI docs at `http://localhost:8000/docs`.*
 
-#### Launch Streamlit 2-Tab Curation Portal:
+#### Launch Streamlit Curation Dashboard:
 ```bash
-uv run streamlit run app.py
+uv run streamlit run src/app.py --server.port 8501
 ```
 *Access Dashboard at `http://localhost:8501`.*
 
@@ -164,36 +231,40 @@ uv run streamlit run app.py
 
 ## 💻 CLI Usage (`agent-eval`)
 
-### View Dataset & Telemetry Statistics:
+### View Telemetry & DPO Dataset Statistics:
 ```bash
 uv run agent-eval stats
 ```
 
-### Run Evaluation on Local Files:
+### Run Dual Evaluation on Local Files:
 ```bash
-uv run agent-eval run --code-file solution.py --test-file tests.py --prompt "Implement LRU Cache"
+uv run agent-eval run --code-file src/sandbox.py --test-file tests/test_sandbox.py --prompt "Evaluate sandbox security"
 ```
 
-### Run SWE-bench Style Repo Patch Evaluation:
+### Run SWE-bench Style Repository Patch Evaluation:
 ```bash
-uv run agent-eval repo --repo ./my_repo --patch patch.py --test-cmd "pytest"
+uv run agent-eval repo --repo . --patch tests/test_sandbox.py --test-cmd "pytest tests/test_sandbox.py"
 ```
 
 ---
 
 ## 🧪 Automated Test Suite
 
-Run the full pytest suite (100% pass rate):
+Execute all 18 unit and integration test cases (100% pass rate):
 
 ```bash
-uv run pytest -v
+uv run pytest tests/ -v
+```
+
+```text
+======================= 18 passed in 22.26s =======================
 ```
 
 ---
 
-## 📊 Direct Preference Optimization (DPO) Schema
+## 📊 Direct Preference Optimization (DPO) Dataset Schema
 
-Exported entries in `data/dpo_dataset.jsonl`:
+Sample exported DPO preference entry in `data/dpo_dataset.jsonl`:
 
 ```json
 {
@@ -216,4 +287,3 @@ Exported entries in `data/dpo_dataset.jsonl`:
 ## 📜 License
 
 Distributed under the MIT License. See [`LICENSE`](LICENSE) for details.
-
