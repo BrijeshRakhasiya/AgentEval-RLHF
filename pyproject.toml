@@ -1,0 +1,18 @@
+[project]
+name = "agenteval-rlhf"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.110.0",
+    "langchain-core>=0.1.30",
+    "langchain-nvidia-ai-endpoints>=1.4.3",
+    "langchain-openai>=0.1.0",
+    "pydantic>=2.6.0",
+    "pytest>=8.0.0",
+    "python-dotenv>=1.0.1",
+    "requests>=2.31.0",
+    "streamlit>=1.32.0",
+    "uvicorn[standard]>=0.28.0",
+]

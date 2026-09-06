@@ -1,0 +1,25 @@
+# Environment & API Keys
+.env
+*.env
+
+# Python & Virtual Environments
+.venv/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Build & Cache
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.uv/
+
+# Dataset & Scratch files
+data/*.jsonl
+scratch/
+*.tmp
+*.log
